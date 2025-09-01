@@ -31,8 +31,13 @@ public class InputManager : MonoBehaviour
             return;
         }
 
-        if (!hit.collider.TryGetComponent(out Item item)) // Caso o que clicarmos não tiver o Component Item (Retornamos)
-        {
+        if (hit.collider.transform.parent == null) // Caso o Collider que clicamos não tiver Pai (Retornamos) "Ground"                
+            return;
+
+
+        // Estamos com um COLLIDER (Collider esta como filho no Renderer a Class Item esta como Pai)
+        if (!hit.collider.transform.parent.TryGetComponent(out Item item)) // Caso o que clicarmos não tiver o Component Item (Retornamos)
+        { // Vamos acessar o Pai do Collider (Que é o Item) e Verificar se tem o Componente Item
             DeselectCurrentItem();
             return;
         }
@@ -45,16 +50,18 @@ public class InputManager : MonoBehaviour
         currentItem.Select(outlineMaterial); // Selecionamos o Item (Passamos o Material de Contorno)
     }
 
-    private void HandleButtonUp()
+    private void HandleButtonUp() // Quando soltar o mouse pegamos o Item selecionado e movemos ele pro Sport :)
     {
         // Verify if we have a current Item
-        if (currentItem == null) // Se não tiver nenhum Item selecionado apenas Retornamos
+        if (currentItem == null) // Se não tiver nenhum Item selecionado apenas Retornamos "Não compra nada"
             return;
 
-        // If we have an Item -> Invoke the Action
+        // If we have an Item -> Invoke the Action (Vamos Levar ele pro spot la embaixo "Compramos ele...")
         currentItem.Deselect(); // Deselecionamos o Item Atual
         onItemClicked?.Invoke(currentItem); // Se tiver o componente "Item" -> Passamos ele como parametro ....
         currentItem = null;
+        
+        
     }
 
     private void DeselectCurrentItem()
