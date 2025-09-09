@@ -8,6 +8,9 @@ public class Item : MonoBehaviour
     // Criamos essa Propriedade public para acessar esse Dado "Podemos criar um metodo tambem.."
     public ItemNameEnum ItemName => itemName; // Utilizando a Lambda apenas criamos um Get.. Não tem Set aqui "É o que queremos"
 
+    private ItemSpot spot;
+    public ItemSpot Spot => spot;
+
     [Header("Elements")]
     [SerializeField] private Renderer rend;
     [SerializeField] private Collider coll;
@@ -18,6 +21,8 @@ public class Item : MonoBehaviour
     {
         baseMaterial = rend.material;
     }
+
+    public void AssignSpot(ItemSpot spot) => this.spot = spot;
 
     public void DisableShadows()
     {

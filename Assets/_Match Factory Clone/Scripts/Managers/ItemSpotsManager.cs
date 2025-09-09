@@ -67,7 +67,7 @@ public class ItemSpotsManager : MonoBehaviour
 
         ItemSpot idealSpot = GetIdealSpotFor(item);
 
-        itemMergeDataDictionary[item.ItemName].Add(item);
+        itemMergeDataDictionary[item.ItemName].Add(item); // Temos uma Lista dentro desse Dictionary, estamos adicionando esse item a essa lista
 
         TryMoveItemToIdealSpot(item, idealSpot);
 
@@ -77,14 +77,91 @@ public class ItemSpotsManager : MonoBehaviour
     {
 
         List<Item> items = itemMergeDataDictionary[item.ItemName].items;  // Vamos pegar o Item que esta armazenado dentro do Dicionario
-        List<ItemSpot> itemSpots = new List<ItemSpot>();
+        List<ItemSpot> spots = new List<ItemSpot>(); // Criamos uma Lista nova dos Spots dos Itens "Posições que eles foram colocados"
 
-        return null;
+        for (int i = 0; i < items.Count; i++) // Loop por todos os items da List "Vamos pegar os Seus respectivos Spots"
+        {
+            spots.Add(items[i].Spot); // Adicionamos a posição que o item esta dentro da Lista de ItemSpots
+        }
+
+        // Temos uma Lista com todas as posições que o item esta ocupando "Lembrando seus similares"
+
+        // Se você tem apenas um Spot o Spot ideal o o seu mais a direita
+        if (spots.Count >= 2)
+            spots.Sort((a, b) => b.transform.GetSiblingIndex().CompareTo(a.transform.GetSiblingIndex()));
+
+        int idealSpotIndex = spots[0].transform.GetSiblingIndex() + 1;
+
+        return itemSpots[idealSpotIndex];
+
     }
 
     private void TryMoveItemToIdealSpot(Item item, ItemSpot idealSpot)
     {
-        throw new NotImplementedException();
+        if (!idealSpot.IsEmpty()) // Verificamos se tem algo dentro.. Se estiver com algum objeto faz "abaixo" "Queremos o FALSE"
+        {
+            HandleIdealSpotFull(item, idealSpot);
+            return;
+        }
+        // Spot esta vazio, então vamos mover esse item para lá
+        MoveItemToSpot(item, idealSpot);
+    }
+
+    private void HandleIdealSpotFull(Item item, ItemSpot idealSpot) // Vamos verificar quando o Spot ideal esta ocupado
+    {
+        // EX: Quando adicionamos algum objeto semelhante, depois vamos adicionar outro, temos que mover os diferentes para direita
+        // Movendo os diferentes para direita liberamos o espaço para colocar os semelhantes lado a lado :)
+        MoveAllItemToTheRightFrom(idealSpot, item);
+    }
+
+    private void MoveAllItemToTheRightFrom(ItemSpot idealSpot, Item itemToPlace)
+    {
+        int spotIndex = idealSpot.transform.GetSiblingIndex();
+
+        for (int i = itemSpots.Length - 2; i >= spotIndex; i--) // LOOP começando por spots - 2 ("PENULTIMO SPOTS") até a posição ideal
+        {
+            ItemSpot spot = itemSpots[i]; // Apenas guardamos um referencia desse Spot no index desejado
+            if (spot.IsEmpty()) // Se estiver vazio DOUBLE CHECK
+                continue;
+
+            // O Item do index SpotIndex vai se mover para o spotIndex + 1 (("MOVER UM A DIREITA"))
+            Item item = spot.Item; // Guardamos o Item que esta nessa posição "i"
+
+            spot.Clear();
+
+            ItemSpot targetSpot = itemSpots[i + 1];
+
+            if (!targetSpot.IsEmpty())// CASO JÁ TENHA ALGUMA COISA NESSE SPOT
+            {
+                Debug.LogError("ERROR: this should not happen!");
+                isBusy = false;
+                return;
+            }
+            // CASO O TARGET SPOT IS EMPTY "OQUE É PRA SER"
+            MoveItemToSpot(item, targetSpot, false);
+        }
+
+        MoveItemToSpot(itemToPlace, idealSpot);
+    }
+
+    private void MoveItemToSpot(Item item, ItemSpot targetSpot, bool checkForMerge = true)
+    {
+        targetSpot.Populate(item);
+
+        // 2. Scale the Item down
+        item.transform.localScale = itemLocalScaleOnSpot;
+
+        // 3. Set your local position to (0,0,0)
+        item.transform.localPosition = itemLocalPositionOnSpot;
+        item.transform.localRotation = Quaternion.identity;
+
+        // 4. Disable the Shadow
+        item.DisableShadows();
+
+        // 5. Disable Item Collider
+        item.DisablePhysics();
+
+        HandleItemReachedSpot(item, checkForMerge);
     }
 
     private void MoveItemToFirstAvaibleSpot(Item item)
@@ -117,6 +194,19 @@ public class ItemSpotsManager : MonoBehaviour
         HandleFirstItemReachedSpot(item);
     }
 
+    private void HandleItemReachedSpot(Item item, bool checkForMerge = true)
+    {
+        if (!checkForMerge)
+            return;
+
+        if (itemMergeDataDictionary[item.ItemName].CanMergeItems()) // Caso tem a Lista de Items for maior ou igual a 3
+        {
+            MergeItems(itemMergeDataDictionary[item.ItemName]);
+        }
+        else
+            CheckForGameOver();
+    }
+
     private void HandleFirstItemReachedSpot(Item item1)
     {
         CheckForGameOver();
@@ -127,6 +217,23 @@ public class ItemSpotsManager : MonoBehaviour
         itemMergeDataDictionary.Add(item.ItemName, new ItemMergeData(item));
     }
 
+    private void MergeItems(ItemMergeData itemMergeData)
+    {
+        List<Item> items = itemMergeData.items;
+
+        // Removemos o Dicionario que contem esse item com o nome e etc..
+        itemMergeDataDictionary.Remove(itemMergeData.itemName);
+
+        // Vamos limpar os Items de sua posição
+        for (int i = 0; i < items.Count; i++)
+        {
+            items[i].Spot.Clear();
+            Destroy(items[i].gameObject);
+        }
+
+        isBusy = false;
+    }
+
     private void CheckForGameOver()
     {
         if (GetFreeSpot() == null)
@@ -134,9 +241,9 @@ public class ItemSpotsManager : MonoBehaviour
         else
             isBusy = false;
     }
-    private void Gameover() => Debug.LogWarning("Game Overrr !!!");
 
     // FUNCTIONAL FUNCTIONS
+    private void Gameover() => Debug.LogWarning("Game Overrr !!!");
     private void StoreSpots()
     {
         itemSpots = new ItemSpot[itemSpotsParent.childCount]; // Inicializamos a Array com o tamanho do numero de Spots
