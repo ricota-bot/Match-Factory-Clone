@@ -6276,6 +6276,8 @@ MonoBehaviour:
   itemSpotsParent: {fileID: 171257608}
   itemLocalPositionOnSpot: {x: 0, y: 0.07, z: 0}
   itemLocalScaleOnSpot: {x: 0.25, y: 0.25, z: 0.25}
+  animationTime: 0.15
+  animationEasing: 7
 --- !u!1 &478656848
 GameObject:
   m_ObjectHideFlags: 0

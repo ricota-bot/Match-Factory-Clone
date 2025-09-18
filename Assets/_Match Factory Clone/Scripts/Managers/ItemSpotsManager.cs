@@ -13,6 +13,11 @@ public class ItemSpotsManager : MonoBehaviour
     [SerializeField] private Vector3 itemLocalScaleOnSpot;
     private bool isBusy;
 
+    [Header("Animations Settings")]
+    [SerializeField] private float animationTime;
+    [SerializeField] private LeanTweenType animationEasing;
+
+
     [Header("Data")]
     private Dictionary<ItemNameEnum, ItemMergeData> itemMergeDataDictionary = new Dictionary<ItemNameEnum, ItemMergeData>();
 
@@ -104,7 +109,7 @@ public class ItemSpotsManager : MonoBehaviour
             return;
         }
         // Spot esta vazio, então vamos mover esse item para lá
-        MoveItemToSpot(item, idealSpot);
+        MoveItemToSpot(item, idealSpot, () => HandleItemReachedSpot(item));
     }
 
     private void HandleIdealSpotFull(Item item, ItemSpot idealSpot) // Vamos verificar quando o Spot ideal esta ocupado
@@ -138,22 +143,30 @@ public class ItemSpotsManager : MonoBehaviour
                 return;
             }
             // CASO O TARGET SPOT IS EMPTY "OQUE É PRA SER"
-            MoveItemToSpot(item, targetSpot, false);
+            MoveItemToSpot(item, targetSpot, () => HandleItemReachedSpot(item, false));
         }
 
-        MoveItemToSpot(itemToPlace, idealSpot);
+        MoveItemToSpot(itemToPlace, idealSpot, () => HandleItemReachedSpot(itemToPlace));
     }
 
-    private void MoveItemToSpot(Item item, ItemSpot targetSpot, bool checkForMerge = true)
+    private void MoveItemToSpot(Item item, ItemSpot targetSpot, Action completedCallBack)
     {
         targetSpot.Populate(item);
 
-        // 2. Scale the Item down
-        item.transform.localScale = itemLocalScaleOnSpot;
+        //// 2. Scale the Item down
+        //item.transform.localScale = itemLocalScaleOnSpot;
 
-        // 3. Set your local position to (0,0,0)
-        item.transform.localPosition = itemLocalPositionOnSpot;
-        item.transform.localRotation = Quaternion.identity;
+        //// 3. Set your local position to (0,0,0)
+        //item.transform.localPosition = itemLocalPositionOnSpot;
+        //item.transform.localRotation = Quaternion.identity;
+
+        float animationDuration = 0.15f;
+        LeanTween.moveLocal(item.gameObject, itemLocalPositionOnSpot, animationDuration)
+            .setEase(LeanTweenType.easeInOutCubic);
+        LeanTween.scale(item.gameObject, itemLocalScaleOnSpot, animationDuration)
+            .setEase(LeanTweenType.easeInOutCubic);
+        LeanTween.rotateLocal(item.gameObject, Vector3.zero, animationDuration)
+            .setOnComplete(completedCallBack);
 
         // 4. Disable the Shadow
         item.DisableShadows();
@@ -161,7 +174,7 @@ public class ItemSpotsManager : MonoBehaviour
         // 5. Disable Item Collider
         item.DisablePhysics();
 
-        HandleItemReachedSpot(item, checkForMerge);
+
     }
 
     private void MoveItemToFirstAvaibleSpot(Item item)
@@ -176,26 +189,12 @@ public class ItemSpotsManager : MonoBehaviour
 
         CreateItemMergeData(item);
 
-        targetSpot.Populate(item);
-
-        // 2. Scale the Item down
-        item.transform.localScale = itemLocalScaleOnSpot;
-
-        // 3. Set your local position to (0,0,0)
-        item.transform.localPosition = itemLocalPositionOnSpot;
-        item.transform.localRotation = Quaternion.identity;
-
-        // 4. Disable the Shadow
-        item.DisableShadows();
-
-        // 5. Disable Item Collider
-        item.DisablePhysics();
-
-        HandleFirstItemReachedSpot(item);
+        MoveItemToSpot(item, targetSpot, () => HandleFirstItemReachedSpot(item));
     }
 
     private void HandleItemReachedSpot(Item item, bool checkForMerge = true)
     {
+        item.Spot.BumpyDown();
         if (!checkForMerge)
             return;
 
@@ -207,8 +206,9 @@ public class ItemSpotsManager : MonoBehaviour
             CheckForGameOver();
     }
 
-    private void HandleFirstItemReachedSpot(Item item1)
+    private void HandleFirstItemReachedSpot(Item item)
     {
+        item.Spot.BumpyDown();
         CheckForGameOver();
     }
 
@@ -231,6 +231,48 @@ public class ItemSpotsManager : MonoBehaviour
             Destroy(items[i].gameObject);
         }
 
+        if (itemMergeDataDictionary.Count <= 0)
+            isBusy = false;
+        else
+            MoveAllItemsToTheLeft(HandleAllItemsMovedToTheLeft);
+
+    }
+
+    private void MoveAllItemsToTheLeft(Action onCompletedCallBack)
+    {
+        bool callBackTriggered = false;
+
+        for (int i = 3; i < itemSpots.Length; i++)
+        {
+            ItemSpot spot = itemSpots[i];
+
+            if (spot.IsEmpty())
+                continue;
+
+            Item item = spot.Item;
+
+            ItemSpot targetSpot = itemSpots[i - 3];
+
+            if (!targetSpot.IsEmpty())
+            {
+                Debug.LogWarning($"{targetSpot.name} is full !");
+                isBusy = false;
+                return;
+            }
+
+            spot.Clear();
+            onCompletedCallBack += () => HandleItemReachedSpot(item, false);
+            MoveItemToSpot(item, targetSpot, onCompletedCallBack);
+
+            callBackTriggered = true;
+        }
+
+        if (!callBackTriggered) // Caso não chamar o CallBack chamamos ele agora
+            onCompletedCallBack?.Invoke();
+    }
+
+    private void HandleAllItemsMovedToTheLeft()
+    {
         isBusy = false;
     }
 

@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class ItemSpot : MonoBehaviour
 {
+    [Header("Elements")]
+    [SerializeField] private Transform itemParent;
+    [SerializeField] private Animator animator;
+
     [Header("Settings")]
     private Item item;
     public Item Item => item; // GETTER da variavel item
@@ -12,7 +16,7 @@ public class ItemSpot : MonoBehaviour
         this.item = item; // Apenas armazenamos um item dentro do item que esta no escopo da função
 
         // 1. Turn the item as a child of the item Spot
-        item.transform.SetParent(transform); // O item que pegarmos vai se tornar do portador desse script
+        item.transform.SetParent(itemParent); // O item que pegarmos vai se tornar do portador desse script
 
         item.AssignSpot(this);
     }
@@ -20,6 +24,11 @@ public class ItemSpot : MonoBehaviour
     public void Clear()
     {
         item = null;
+    }
+
+    public void BumpyDown()
+    {
+        animator.Play("BumpySpot", 0, 0);
     }
 
     public bool IsEmpty() // Vamos fazer um metodo que retorna se o spot está vazio
