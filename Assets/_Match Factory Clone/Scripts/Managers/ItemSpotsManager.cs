@@ -21,6 +21,9 @@ public class ItemSpotsManager : MonoBehaviour
     [Header("Data")]
     private Dictionary<ItemNameEnum, ItemMergeData> itemMergeDataDictionary = new Dictionary<ItemNameEnum, ItemMergeData>();
 
+    [Header("Actions")]
+    public static Action<List<Item>> OnMergeStarted;
+
     private void Awake()
     {
         // ACTIONS
@@ -226,15 +229,14 @@ public class ItemSpotsManager : MonoBehaviour
 
         // Vamos limpar os Items de sua posição
         for (int i = 0; i < items.Count; i++)
-        {
             items[i].Spot.Clear();
-            Destroy(items[i].gameObject);
-        }
 
         if (itemMergeDataDictionary.Count <= 0)
             isBusy = false;
         else
             MoveAllItemsToTheLeft(HandleAllItemsMovedToTheLeft);
+
+        OnMergeStarted?.Invoke(items);
 
     }
 
