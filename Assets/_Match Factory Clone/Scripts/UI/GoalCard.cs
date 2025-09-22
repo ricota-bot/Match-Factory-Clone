@@ -1,16 +1,27 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GoalCard : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [Header("Elements")]
+    [SerializeField] private TextMeshProUGUI amountText;
+    [SerializeField] private Image checkmarkImage;
+
+
+    public void Configure(int initialAmount)
     {
-        
+        amountText.text = initialAmount.ToString();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UpdateAmount(int amount)
     {
-        
+        amountText.text = amount.ToString();
+    }
+
+    public void Complete()
+    {
+        amountText.gameObject.SetActive(false);
+        checkmarkImage.gameObject.SetActive(true);
     }
 }

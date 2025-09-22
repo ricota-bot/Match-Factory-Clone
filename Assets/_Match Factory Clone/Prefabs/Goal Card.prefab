@@ -285,6 +285,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8fe2b93c21f6cc48a2f92c1de49f95e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  amountText: {fileID: 6394983791805022324}
+  checkmarkImage: {fileID: 8734939635798752553}
 --- !u!1 &5396235873548493803
 GameObject:
   m_ObjectHideFlags: 0

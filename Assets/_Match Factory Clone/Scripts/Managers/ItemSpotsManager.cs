@@ -23,6 +23,7 @@ public class ItemSpotsManager : MonoBehaviour
 
     [Header("Actions")]
     public static Action<List<Item>> OnMergeStarted;
+    public static Action<Item> OnItemPickedUp;
 
     private void Awake()
     {
@@ -55,6 +56,7 @@ public class ItemSpotsManager : MonoBehaviour
 
         // Caso passe nas verificações anteriores vamos fazer os codigos abaixos
         isBusy = true; // Agora você esta ocupado, movendo o item para o primeiro FreeSpot Disponivel
+        OnItemPickedUp?.Invoke(item);
         HandleItemClicked(item);
     }
 
