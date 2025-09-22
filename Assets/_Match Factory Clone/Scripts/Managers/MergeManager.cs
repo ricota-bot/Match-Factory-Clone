@@ -15,7 +15,7 @@ public class MergeManager : MonoBehaviour
     [SerializeField] private LeanTweenType smashEasing;
 
     [Header("Effects")]
-    [SerializeField] private ParticleSystem mergeParticles;
+    [SerializeField] private GameObject mergeParticles;
 
     private void Awake()
     {
@@ -63,7 +63,6 @@ public class MergeManager : MonoBehaviour
         for (int i = 0; i < items.Count; i++)
             Destroy(items[i].gameObject);
 
-        ParticleSystem particles = Instantiate(mergeParticles, items[1].transform.position, Quaternion.identity, transform);
-        particles.Play();
+        GameObject particles = Instantiate(mergeParticles, items[1].transform.position, Quaternion.identity, transform);
     }
 }
