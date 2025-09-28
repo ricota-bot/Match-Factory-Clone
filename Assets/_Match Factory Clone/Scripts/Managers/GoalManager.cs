@@ -46,7 +46,7 @@ public class GoalManager : MonoBehaviour
     {
         GoalCard cardInstance = Instantiate(goalCardPrefab, goalsCardParent);
 
-        cardInstance.Configure(goal.amount);
+        cardInstance.Configure(goal.amount, goal.itemPrefab.Icon);
         goalsCardList.Add(cardInstance);
     }
 
@@ -63,9 +63,9 @@ public class GoalManager : MonoBehaviour
             if (goals[i].amount <= 0)
                 CompletedGoal(i);
             else
-                goalsCardList[i].UpdateAmount(goals[i].amount); 
+                goalsCardList[i].UpdateAmount(goals[i].amount);
 
-                break;
+            break;
 
         }
     }
@@ -86,6 +86,7 @@ public class GoalManager : MonoBehaviour
                 return;
         }
 
+        GameManager.instance.SetGameState(EGameState.LEVELCOMPLETE);
         Debug.LogWarning("Level Completed !!");
     }
 }

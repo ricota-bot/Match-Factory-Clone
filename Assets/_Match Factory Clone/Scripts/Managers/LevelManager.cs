@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class LevelManager : MonoBehaviour
+public class LevelManager : MonoBehaviour, IGameStateListener
 {
     // Responsavel por Spawnar os Leveis -- Irá armazenar todos os Leveis aqui
     // Save the Player Index
@@ -19,11 +19,6 @@ public class LevelManager : MonoBehaviour
     private void Awake()
     {
         LoadData();
-    }
-
-    private void Start()
-    {
-        SpawnLevel();
     }
 
     private void SpawnLevel()
@@ -47,5 +42,17 @@ public class LevelManager : MonoBehaviour
     private void SaveData()
     {
         PlayerPrefs.SetInt(levelKey, levelIndex);
+    }
+
+    public void GameStateChangedCallBack(EGameState gameState)
+    {
+        if (gameState == EGameState.GAME)
+            SpawnLevel();
+        else if (gameState == EGameState.LEVELCOMPLETE)
+        {
+            levelIndex++;
+            SaveData();
+        }
+
     }
 }

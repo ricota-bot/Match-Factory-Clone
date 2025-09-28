@@ -4,16 +4,28 @@
 // ENUMS
 public enum ItemNameEnum
 {
-    Cube,
-    Sphere,
-    Cylinder,
-    Capsule
+    Bomb,
+    Trophy,
+    Money,
+    BluePotion,
+    Heart,
+    Key,
+    Time,
+    Lock
 }
 
-public static class Enums 
+public enum EGameState
+{
+    MENU,
+    GAME,
+    LEVELCOMPLETE,
+    GAMEOVER
+}
+
+public static class Enums
 {
     public static void AlgumMetodoAqui()
     {
-        
+
     }
 }

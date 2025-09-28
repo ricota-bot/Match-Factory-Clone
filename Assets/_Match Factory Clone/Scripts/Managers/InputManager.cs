@@ -6,19 +6,21 @@ public class InputManager : MonoBehaviour
     [Header("Actions")]
     public static Action<Item> onItemClicked;
 
-
     [Header("Settings")]
     [SerializeField] private Material outlineMaterial;
     private Item currentItem;
 
-    [SerializeField] private bool isInputOn;
-
     // Update is called once per frame
     void Update()
     {
-        if (!isInputOn)
+        if (!GameManager.instance.IsGameState())
             return;
 
+        HandleControl();
+    }
+
+    private void HandleControl()
+    {
         if (Input.GetMouseButton(0)) // Retorna enquanto o Botão do Mouse estiver pressionado
             HandleButtonDrag();
         else if (Input.GetMouseButtonUp(0)) // Retorna quando o Botão do Mouse for Solto

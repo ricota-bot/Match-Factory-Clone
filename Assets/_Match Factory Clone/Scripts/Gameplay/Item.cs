@@ -4,9 +4,11 @@ using UnityEngine;
 public class Item : MonoBehaviour
 {
     [Header("Data")]
-    [SerializeField] private ItemNameEnum itemName;
-    // Criamos essa Propriedade public para acessar esse Dado "Podemos criar um metodo tambem.."
+    [SerializeField] private ItemNameEnum itemName;// Criamos essa Propriedade public para acessar esse Dado "Podemos criar um metodo tambem.."
     public ItemNameEnum ItemName => itemName; // Utilizando a Lambda apenas criamos um Get.. Não tem Set aqui "É o que queremos"
+
+    [SerializeField] private Sprite icon;
+    public Sprite Icon => icon;
 
     private ItemSpot spot;
     public ItemSpot Spot => spot;

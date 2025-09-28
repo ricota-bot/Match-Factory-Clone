@@ -289,7 +289,7 @@ public class ItemSpotsManager : MonoBehaviour
     }
 
     // FUNCTIONAL FUNCTIONS
-    private void Gameover() => Debug.LogWarning("Game Overrr !!!");
+    private void Gameover() => GameManager.instance.SetGameState(EGameState.GAMEOVER);
     private void StoreSpots()
     {
         itemSpots = new ItemSpot[itemSpotsParent.childCount]; // Inicializamos a Array com o tamanho do numero de Spots
